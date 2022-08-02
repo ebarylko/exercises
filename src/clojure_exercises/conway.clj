@@ -85,7 +85,7 @@
 (defn apply-rules
   "Pre: takes a board and a position
   Post: if the position is alive after applying the rules, returns a board with that pos, else none"
-  [old-board pos new-board]
+  [old-board new-board pos]
   (let [neighbors (count-neighbours old-board pos)
         alive? (old-board pos)
         right-neighbors (> 4 neighbors 1)]
@@ -95,66 +95,16 @@
       (and (not alive?) (= neighbors 3)) (conj new-board pos)
       :else new-board)))
 
+
+
 (defn next-generation
   "Pre: takes a board 
   Post: returns the board after applying the rules to every position"
   [board]
-  (loop [[fst & rst] (mapcat generate-neighbors board)
-         new-board #{}]
-    (if (nil? fst)
-      new-board
-      (recur rst (apply-rules board fst new-board)))))
+  (reduce (partial apply-rules board) #{} (mapcat generate-neighbors board)))
+
 (defn next-generations
   "Pre: takes a board and a number N
   Post: returns the board after N generations"
   [board n]
   (nth (iterate next-generation board) n))
-
-
-(nth (iterate inc 0) 1)
-
-(def board-pos (for [x (range 0 5)
-                     y (range 0 5)]
-                 [x y]))
-
-(defn- alive?
-  [board pos]
-  (seq (nth (nth board (first pos)) (second pos))))
-
-(defn bad-conditions?
-  [neighbors]
-  (or (> 2 neighbors) (<= 4 neighbors)))
-
-(defn dead-cell?
-  [board pos neighbors]
-  (and (alive? board pos) (bad-conditions? neighbors)))
-
-
-(defn live-cell?
-  [board pos neighbors]
-  (and (alive? board pos) (not (bad-conditions? neighbors))))
-
-
-(defn revived-cell?
-  [board pos neighbors]
-  (and (not (alive? board pos)) (= neighbors 3)))
-
-
-;; (defn change-board
-;;   "Pre: takes a board, a pos, and the number of neighbors for that position
-;;   Post: returns the board changed after applying the rules for that position"
-;;   [board pos neighbors]
-;;   (let [alive (not-empty (grab-pos board pos))
-;;         bad-conditions (or (> 2 neighbors) (<= 4 neighbors))]
-;;     (cond
-;;       (and alive bad-conditions) (assoc-in board pos [])
-;;       (and alive (not bad-conditions)) board
-;;       (and (not alive) (= neighbors 3)) (assoc-in board pos ["A"])) ))
-
-;; Any live cell with fewer than two live neighbours dies (referred to as underpopulation or exposure[1]).
-;; Any live cell with more than three live neighbours dies (referred to as overpopulation or overcrowding).
-;; Any live cell with two or three live neighbours lives, unchanged, to the next generation.
-;; Any dead cell with exactly three live neighbours will come to life.
-
-
-starting-board
