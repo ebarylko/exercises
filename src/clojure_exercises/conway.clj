@@ -77,11 +77,6 @@
     (and (not alive?) (= neighbors 3)) (add-cell board pos)
     :else board)))
 
-(change-board starting-board [2 1])
-(mapcat generate-neighbors starting-board)
-(map (partial change-board starting-board ) (mapcat generate-neighbors starting-board))
-
-
 (defn apply-rules
   "Pre: takes a board and a position
   Post: if the position is alive after applying the rules, returns a board with that pos, else none"
@@ -89,12 +84,9 @@
   (let [neighbors (count-neighbours old-board pos)
         alive? (old-board pos)
         right-neighbors (> 4 neighbors 1)]
-    (cond
-      (and  alive? right-neighbors) (conj new-board pos)
-      (and alive? (or (> neighbors 3) (< neighbors 2))) new-board
-      (and (not alive?) (= neighbors 3)) (conj new-board pos)
-      :else new-board)))
-
+    (cond-> new-board
+      (and  alive? right-neighbors) (conj pos)
+      (and (not alive?) (= neighbors 3)) (conj pos))))
 
 
 (defn next-generation
