@@ -81,11 +81,37 @@
 (mapcat generate-neighbors starting-board)
 (map (partial change-board starting-board ) (mapcat generate-neighbors starting-board))
 
+
+(defn apply-rules
+  "Pre: takes a board and a position
+  Post: if the position is alive after applying the rules, returns a board with that pos, else none"
+  [old-board pos new-board]
+  (let [neighbors (count-neighbours old-board pos)
+        alive? (old-board pos)
+        right-neighbors (> 4 neighbors 1)]
+    (cond
+      (and  alive? right-neighbors) (conj new-board pos)
+      (and alive? (or (> neighbors 3) (< neighbors 2))) new-board
+      (and (not alive?) (= neighbors 3)) (conj new-board pos)
+      :else new-board)))
+
 (defn next-generation
-  "Pre: takes a board
-  Post: returns the board after applying the rules"
+  "Pre: takes a board 
+  Post: returns the board after applying the rules to every position"
   [board]
-  )
+  (loop [[fst & rst] (mapcat generate-neighbors board)
+         new-board #{}]
+    (if (nil? fst)
+      new-board
+      (recur rst (apply-rules board fst new-board)))))
+(defn next-generations
+  "Pre: takes a board and a number N
+  Post: returns the board after N generations"
+  [board n]
+  (nth (iterate next-generation board) n))
+
+
+(nth (iterate inc 0) 1)
 
 (def board-pos (for [x (range 0 5)
                      y (range 0 5)]
@@ -113,32 +139,6 @@
   [board pos neighbors]
   (and (not (alive? board pos)) (= neighbors 3)))
 
-(defn change-board
-  "Pre: takes a board, a pos, and the number of neighbors for that position
-  Post: returns the board changed after applying the rules for that position"
-  [board pos neighbors]
-  (cond
-    (live-cell? board pos neighbors) board
-    (dead-cell? board pos neighbors) (assoc-in board pos []) 
-    (revived-cell? board pos neighbors) (assoc-in board pos "A")
-    :else board))
-
-(defn change-board
-  "Pre: takes a board, a pos, and the number of neighbors for that position
-  Post: returns the board changed after applying the rules for that position"
-  [board pos]
-  (let [neighbors (count-neighbours board pos)]
-  (cond
-    (live-cell? board pos neighbors) board
-    (dead-cell? board pos neighbors) (assoc-in board pos []) 
-    (revived-cell? board pos neighbors) (assoc-in board pos "A")
-    :else board)))
-
-(reduce change-board starting-board board-pos)
-(distinct (map (partial change-board starting-board) board-pos))
-(nth (map (partial change-board starting-board) board-pos) 3)
-(live-cell? starting-board [2 2] 1)
-(distinct [[ ["AA"] []] [ [] []]])
 
 ;; (defn change-board
 ;;   "Pre: takes a board, a pos, and the number of neighbors for that position
