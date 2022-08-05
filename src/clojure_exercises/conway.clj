@@ -1,54 +1,47 @@
-(ns clojure-exercises.conway)
+(ns clojure-exercises.conway
+  (:require [clojure.set :as s]))
+
+(def neighbors
+  (for [x [-1 0 1]
+        y [-1 0 1]
+        :when (not= [0 0] [x y])]
+    [x y]))
 
 (defn generate-neighbors
   "Pre: takes a position on the map
   Post: returns the positions of the possible neighbors"
-  [[row column :as pos]]
-(for [x (range (dec row) (+ 2 row))
-                y (range (dec column) (+ 2 column))
-                :when (not= pos [x y])]
-            [x y]))
-
-
-;; (defn apply-rules*
-;;   "Pre: takes a board and a position
-;;   Post: if the position is alive after applying the rules, returns a board with that pos, else none"
-;;   [old-board new-board pos]
-;;   (let [neighbors ((frequencies (mapcat generate-neighbors old-board)) pos)
-;;         alive? (old-board pos)]
-;;     (cond-> new-board
-;;       (or (= neighbors 3)
-;;           (and alive? (= 2 neighbors))) (conj pos))))
-
-;; (defn next-generation
-;;   "Pre: takes a board 
-;;   Post: returns the board after applying the rules to every position"
-;;   [board]
-;;   (reduce (partial apply-rules board) #{} (mapcat generate-neighbors board)))
-
+  [[x y]]
+  (for [[dx dy] neighbors]
+    [(+ x dx) (+ y dy)]))
 
 (defn apply-rules
   "Pre:takes, a map of key-values of position and the amount of neighbors, a new board, and a position
   Post: if the position is alive after applying the rules, returns new board with that pos, else new-board"
   [old-board new-board [pos neighbors]]
-(cond-> new-board
-      (or (= neighbors 3)
-          (and (old-board pos) (= 2 neighbors))) (conj pos)))
+  (cond-> new-board
+    (or (= 3 neighbors)
+        (and (old-board pos)
+             (= 2 neighbors))) (conj pos)))
 
+(#{1 2 3} 2)
+
+([1 2 3] 10)
 
 (defn next-generation
   "Pre: takes a board 
   Post: returns the board after applying the rules to every position"
   [board]
-  (reduce
-  (partial apply-rules board)
-   #{}
-   (frequencies (mapcat generate-neighbors board))))
-
+  ; O(n) + O(8 * n) + O(8 * n) = O(17 * n)
+  ;= O(k * n) = O(n) (because k is relatively small)
+  (->> board
+       (mapcat generate-neighbors) ; O(n)
+       frequencies ; O(8 * n)
+       (reduce ; O(8 * n)
+        (partial apply-rules board) ; O(1)
+        #{})))
 
 (defn next-generations
   "Pre: takes a board and a number N
   Post: returns the board after N generations"
   [board n]
   (nth (iterate next-generation board) n))
-
