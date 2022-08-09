@@ -23,21 +23,15 @@
         (and (old-board pos)
              (= 2 neighbors))) (conj pos)))
 
-(#{1 2 3} 2)
-
-([1 2 3] 10)
-
 (defn next-generation
   "Pre: takes a board 
   Post: returns the board after applying the rules to every position"
   [board]
-  ; O(n) + O(8 * n) + O(8 * n) = O(17 * n)
-  ;= O(k * n) = O(n) (because k is relatively small)
   (->> board
-       (mapcat generate-neighbors) ; O(n)
-       frequencies ; O(8 * n)
-       (reduce ; O(8 * n)
-        (partial apply-rules board) ; O(1)
+       (mapcat generate-neighbors) 
+       frequencies 
+       (reduce 
+        (partial apply-rules board) 
         #{})))
 
 (defn next-generations
