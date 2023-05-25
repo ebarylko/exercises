@@ -2,26 +2,28 @@
 
 (def input [1 2 3])
 
+(defn gen-next-subsets
+  "Pre: takes a set and a possible subset
+  Post: returns the new subsets and the modified set"
+  [coll pos]
+  (let [modified-set (rest coll)]
+    [[modified-set (conj pos (first coll))]
+     [modified-set pos]]))
+
 (defn gen-powerset
   "Pre: takes a set of integers and a possible subset
   Post: returns all possible subsets"
-  [coll pos]
+  [coll pos sols]
   (if (empty? coll)
-    pos
-(conj pos (gen-powerset (rest coll) (conj pos (first coll)))
-      (gen-powerset (rest coll) pos))))
+    (conj sols pos)
+    (reduce (fn [sub-s [coll pos]]
+              (gen-powerset coll pos sub-s))
+            sols
+            (gen-next-subsets coll pos) )))
 
 (defn possible-subsets
   "Pre: Takes a set of integers
   Post: returns all possible subsets of the set"
   [coll]
-  (gen-powerset coll []))
+  (gen-powerset coll [] #{}))
 
-"Idea: for every element, recur with picking the element and with not picking the element
-Since every choice is to include or not include, you will generate all possibilities"
-
-"Loop: will have current set so far and remaining elements. if no remaining elements left, will add it to the solutions. if not, I will add to the stack the set with and without the first remaining element, and discard the remaining element I just used"
-
-(gen-powerset [1] [])
-(gen-powerset [1 2] [])
-(count (gen-powerset [1 2 3] []))
