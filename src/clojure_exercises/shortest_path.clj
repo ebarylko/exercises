@@ -80,16 +80,6 @@
             (plot-path% pos end-pos (conj visited start-pos) board solution))))
 
 
-(defn plot-path*
-  "Pre: Takes a starting point, an end point, the visited positions, the board, and the current solutions
-  Post: returns all possible paths from the starting position to end position"
-  [start-pos end-pos visited board solution]
-  (println "Start:" start-pos)
-  (println "Visited:" visited)
-  (if (reached-end? start-pos end-pos)
-    (swap! solutions conj visited)
-    (for [pos (gen-valid-moves start-pos visited board)]
-      (plot-path* pos end-pos (conj visited start-pos) board solution))))
 
 (defn worse-than-solution?
   "Pre: takes the current visited path and the current solution
@@ -99,7 +89,18 @@
     nil
   (>= (count proposed-sol) (count current-sol))))
 
-(defn plot-path*
+(def solutions (atom nil))
+
+(defn plot-path-iterative
+  "Pre: Takes a starting point, an end point, the visited positions, the board, and the current solutions
+  Post: returns all possible paths from the starting position to end position"
+  [start end visited board]
+  (loop [start start end end check [] sol []]
+    (if reached-end? start end)
+    (conj sol ))
+  )
+
+(defn plot-path-mutative
   "Pre: Takes a starting point, an end point, the visited positions, the board, and the current solutions
   Post: returns all possible paths from the starting position to end position"
   [start-pos end-pos visited board solution]
@@ -107,7 +108,7 @@
     (reset! solutions visited)
     (for [pos (gen-valid-moves start-pos visited board)]
       (when-not (worse-than-solution? visited @solutions)
-      (plot-path* pos end-pos (conj visited start-pos) board solution)))))
+      (plot-path-mutative pos end-pos (conj visited start-pos) board solution)))))
 
 #_(defn plot-paths
   "Pre: takes the initial position, a final destination, all visited positions, and the board
@@ -132,5 +133,5 @@
 
 (def solutions (atom nil))
 (def A (shortest-path [0 0] [2 0] init-board))
-(plot-path* [0 0] [2 2] [] init-board [])
+(plot-path-mutative [0 0] [2 2] [] init-board [])
 @solutions
